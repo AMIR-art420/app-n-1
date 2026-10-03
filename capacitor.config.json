@@ -3,7 +3,7 @@
   "appName": "پیام‌رسان",
   "webDir": "www",
   "server": {
-    "url": "https://YOURDOMAIN.com",
+    "url": "https://payamresan-nkte.onrender.com",
     "androidScheme": "https",
     "cleartext": false
   },
