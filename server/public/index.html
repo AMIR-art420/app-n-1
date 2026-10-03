@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2f7de1">
+<title>پیام‌رسان</title>
+<style>
+:root{--bg:#f2f6fc;--card:#fff;--ink:#223344;--mute:#6b7c8f;--brand:#2f7de1;--link:var(--brand);--on-link:#fff;--mine:var(--brand);--mine-ink:#fff;--other:#fff;--line:#dde5ef;--err:#c0392b}
+/* تم‌ها: آبی (پیش‌فرض)، مشکی، قرمز، سبز، بنفش */
+[data-theme=red]{--bg:#fbf3f3;--brand:#d93a3a;--ink:#3a2222;--mute:#8a6b6b;--line:#efdcdc}
+[data-theme=green]{--bg:#f1f8f3;--brand:#2e9e57;--ink:#1f3527;--mute:#68826f;--line:#d9eadf}
+[data-theme=purple]{--bg:#f6f2fc;--brand:#7b4fd6;--ink:#2d2340;--mute:#7a6e91;--line:#e4dcf2}
+[data-theme=black]{--bg:#0c0c0e;--card:#17171a;--ink:#ececf0;--mute:#9a9aa5;--brand:#232327;--link:#d5d5dc;--on-link:#111;--mine:#34343b;--other:#1f1f23;--line:#2a2a30;--err:#ff7b6b}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:Vazirmatn,Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.6}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+.view{display:none;height:100dvh;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.view.on{display:flex}
+header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--brand);color:#fff}
+header h1{font-size:18px;margin:0;flex:1}
+header small{opacity:.85}
+.back{background:none;border:0;color:#fff;font-size:22px;padding:0 4px}
+.pad{padding:14px 16px;overflow-y:auto;flex:1}
+.field{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:10px}
+.btn{padding:11px 18px;border:1px solid transparent;border-radius:12px;background:var(--brand);color:#fff;font-weight:600}
+.btn.ghost{background:none;color:var(--link);border-color:var(--link)}
+.btn.danger{background:none;color:var(--err);border-color:var(--err)}
+.btn.block{width:100%}
+.row{display:flex;gap:8px;align-items:center}
+.room{display:flex;align-items:stretch;width:100%;margin-bottom:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.room .main{flex:1;display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:start;padding:13px 14px;background:none;border:0;min-width:0}
+.room .main div{overflow-wrap:anywhere}
+.room span{color:var(--mute);font-size:13px;white-space:nowrap}
+.room .badge{background:var(--link);color:var(--on-link);border-radius:10px;padding:0 8px;font-size:12px;min-width:20px;text-align:center}
+.room .act{background:none;border:0;border-inline-start:1px solid var(--line);color:var(--err);padding:0 14px;font-size:13px}
+.toast{position:fixed;top:calc(8px + env(safe-area-inset-top));left:10px;right:10px;z-index:20;background:var(--card);color:var(--ink);border:1px solid var(--line);border-inline-start:4px solid var(--link);border-radius:12px;padding:10px 14px;box-shadow:0 6px 24px #0003;display:none;cursor:pointer;overflow-wrap:anywhere}
+.toast.on{display:block}
+.toast b{display:block;font-size:13px;color:var(--link)}
+.sec{font-size:13px;color:var(--mute);margin:14px 2px 6px}
+.empty{text-align:center;color:var(--mute);padding:28px 8px}
+#msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px}
+.mrow{display:flex;align-items:flex-end;gap:8px;max-width:88%;align-self:flex-start}
+.mrow.me{align-self:flex-end;flex-direction:row-reverse}
+.m{min-width:0;padding:8px 12px;border-radius:16px;background:var(--other);border:1px solid var(--line);overflow-wrap:anywhere}
+.m.me{background:var(--mine);color:var(--mine-ink);border-color:var(--mine)}
+.m b{display:block;font-size:12px;color:var(--link)}
+.m.me b{color:#fffc}
+.av{flex:none;width:36px;height:36px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;line-height:1;user-select:none}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.m i{display:block;font-size:11px;opacity:.65;font-style:normal;text-align:end}
+.m p{margin:0;white-space:pre-wrap}
+/* ثبت‌نام / ورود */
+.tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs button{flex:1;border:0;background:none;border-radius:9px;padding:8px;font-weight:600;color:var(--mute)}
+.tabs button.on{background:var(--brand);color:#fff}
+.avpick{display:flex;flex-direction:column;align-items:center;gap:10px;margin:6px 0 16px}
+.av.big{width:96px;height:96px;font-size:40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.profile{display:flex;align-items:center;gap:14px}
+.profile b{font-size:17px;overflow-wrap:anywhere;display:block}
+.profile small{display:block;color:var(--mute);overflow-wrap:anywhere;white-space:pre-wrap}
+.lbl{display:block;font-size:13px;color:var(--mute);margin:0 2px 4px}
+textarea.field{resize:none;display:block}
+.pbody{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;margin-bottom:14px}
+.pbody b{font-size:18px;overflow-wrap:anywhere}.pbody p{margin:0;color:var(--mute);white-space:pre-wrap;overflow-wrap:anywhere}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.themes button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border:2px solid var(--line);border-radius:14px;background:var(--card);font-size:13px}
+.themes button[aria-pressed=true]{border-color:var(--link)}
+.themes i{width:34px;height:34px;border-radius:50%;border:1px solid #0003;display:flex;align-items:center;justify-content:center;color:#fff;font-style:normal;font-size:18px}
+#bar{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line)}
+#bar input{flex:1;margin:0}
+.sheet{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;z-index:9}
+.sheet.on{display:flex}
+.sheet>div{width:100%;background:var(--card);padding:18px 16px calc(18px + env(safe-area-inset-bottom));border-radius:20px 20px 0 0}
+.sheet h2{margin:0 0 12px;font-size:17px}
+.err{color:var(--err);min-height:22px;font-size:14px;margin:0 0 8px}
+@media(prefers-reduced-motion:no-preference){.sheet.on>div{animation:up .18s ease-out}@keyframes up{from{transform:translateY(30px);opacity:0}}}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast" role="status"></div>
+
+<section class="view" id="auth">
+  <header><h1>پیام‌رسان</h1></header>
+  <div class="pad">
+    <div class="tabs" role="tablist"><button type="button" id="tabReg" class="on">ثبت‌نام</button><button type="button" id="tabLogin">ورود</button></div>
+    <div class="avpick" id="avpick">
+      <div id="avPrev"></div>
+      <button type="button" class="btn ghost" id="avBtn">انتخاب عکس پروفایل</button>
+    </div>
+    <input type="file" id="avFile" accept="image/*" hidden>
+    <input class="field" id="aname" maxlength="24" placeholder="نام" autocomplete="username">
+    <input class="field" id="apw" type="password" maxlength="64" placeholder="رمز عبور (حداقل ۶ حرف)" autocomplete="current-password">
+    <p class="err" id="aerr" role="alert"></p>
+    <button type="button" class="btn block" id="aGo">ثبت‌نام</button>
+  </div>
+</section>
+
+<section class="view" id="settings">
+  <header><button class="back" id="sback" aria-label="بازگشت">›</button><h1>تنظیمات</h1></header>
+  <div class="pad">
+    <div class="card profile"><div id="sAv"></div><div style="min-width:0"><b id="sName"></b><small id="sBio"></small></div></div>
+    <button type="button" class="btn block" id="sEdit">ویرایش پروفایل</button>
+    <div class="sec">تم برنامه</div>
+    <div class="themes" id="themes"></div>
+    <div class="sec">حساب</div>
+    <button type="button" class="btn danger block" id="logout">خروج از حساب</button>
+  </div>
+</section>
+
+<section class="view" id="edit">
+  <header><button class="back" id="eback" aria-label="بازگشت">›</button><h1>ویرایش پروفایل</h1></header>
+  <div class="pad">
+    <div class="avpick">
+      <div id="eAv"></div>
+      <div class="row"><button type="button" class="btn ghost" id="ePhoto">تغییر عکس</button><button type="button" class="btn ghost" id="ePhotoDel">حذف عکس</button></div>
+    </div>
+    <label class="lbl" for="ename">نام</label>
+    <input class="field" id="ename" maxlength="24" autocomplete="off">
+    <label class="lbl" for="ebio">درباره‌ی من (اختیاری)</label>
+    <textarea class="field" id="ebio" maxlength="70" rows="3" placeholder="چند کلمه درباره‌ی خودت..."></textarea>
+    <p class="err" id="eerr" role="alert"></p>
+    <button type="button" class="btn block" id="eSave">ذخیره‌ی تغییرات</button>
+
+    <div class="sec">تغییر رمز عبور</div>
+    <input class="field" id="epwOld" type="password" maxlength="64" placeholder="رمز فعلی" autocomplete="current-password">
+    <input class="field" id="epwNew" type="password" maxlength="64" placeholder="رمز جدید (حداقل ۶ حرف)" autocomplete="new-password">
+    <p class="err" id="perr" role="alert"></p>
+    <button type="button" class="btn ghost block" id="ePw">تغییر رمز</button>
+
+    <div class="sec">حذف حساب</div>
+    <button type="button" class="btn danger block" id="eDel">حذف حساب</button>
+  </div>
+</section>
+
+<div class="sheet" id="profSheet"><div>
+  <div class="pbody" id="profBody"></div>
+  <button class="btn ghost block" data-close>بستن</button>
+</div></div>
+
+<div class="sheet" id="delSheet"><div>
+  <h2>حذف حساب</h2>
+  <p style="margin:0 0 10px;color:var(--mute);font-size:14px">حساب و اتاق‌هایی که ساخته‌اید برای همیشه حذف می‌شود. برای تأیید رمز عبور را بنویسید.</p>
+  <input class="field" id="dpw" type="password" maxlength="64" placeholder="رمز عبور" autocomplete="current-password">
+  <p class="err" id="derr" role="alert"></p>
+  <div class="row"><button class="btn danger" id="dGo">حذف همیشگی</button><button class="btn ghost" data-close>انصراف</button></div>
+</div></div>
+
+<section class="view" id="home">
+  <header><h1>پیام‌رسان</h1><button class="back" id="gear" aria-label="تنظیمات">⚙</button></header>
+  <div class="pad">
+    <div class="row">
+      <input class="field" id="q" type="search" placeholder="جستجوی اتاق (فارسی یا English)" autocomplete="off" style="margin:0">
+      <button class="btn" id="newBtn">اتاق جدید</button>
+    </div>
+    <div id="mine"></div>
+    <div class="sec" id="listTitle">اتاق‌ها</div>
+    <div id="list"></div>
+  </div>
+</section>
+
+<section class="view" id="chat">
+  <header><button class="back" id="back" aria-label="بازگشت">›</button><h1 id="rname"></h1><small id="onl"></small></header>
+  <div id="msgs"></div>
+  <div id="bar"><input class="field" id="text" maxlength="1000" placeholder="پیام..." autocomplete="off"><button class="btn" id="sendBtn">ارسال</button></div>
+</section>
+
+<div class="sheet" id="joinSheet"><div>
+  <h2 id="joinTitle"></h2>
+  <input class="field" id="jpw" type="password" placeholder="رمز اتاق" autocomplete="off">
+  <p class="err" id="jerr"></p>
+  <div class="row"><button class="btn" id="joinGo">ورود</button><button class="btn ghost" data-close>انصراف</button></div>
+</div></div>
+
+<div class="sheet" id="newSheet"><div>
+  <h2>ساخت اتاق جدید</h2>
+  <input class="field" id="nname" maxlength="40" placeholder="نام اتاق" autocomplete="off">
+  <input class="field" id="npw" type="password" placeholder="رمز اتاق (حداقل ۶ حرف)" autocomplete="off">
+  <p class="err" id="nerr"></p>
+  <div class="row"><button class="btn" id="newGo">ساخت اتاق</button><button class="btn ghost" data-close>انصراف</button></div>
+</div></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const ls = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+const fa = n => Number(n).toLocaleString('fa-IR');
+
+// ---- تم ----
+const THEMES = [
+  { id: 'blue', name: 'آبی', c: '#2f7de1' }, { id: 'black', name: 'مشکی', c: '#17171a' },
+  { id: 'red', name: 'قرمز', c: '#d93a3a' }, { id: 'green', name: 'سبز', c: '#2e9e57' }, { id: 'purple', name: 'بنفش', c: '#7b4fd6' }
+];
+function applyTheme(id) {
+  if (!THEMES.some(t => t.id === id)) id = 'blue';
+  document.documentElement.dataset.theme = id;
+  const m = document.querySelector('meta[name=theme-color]');
+  if (m) m.content = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim();
+  document.querySelectorAll('#themes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
+  return id;
+}
+let theme = applyTheme(ls.get('theme', 'blue'));
+(() => {
+  const box = $('#themes');
+  THEMES.forEach(t => {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.id = t.id;
+    const dot = document.createElement('i'); dot.style.background = t.c; dot.textContent = t.id === theme ? '✓' : '';
+    b.append(dot, document.createTextNode(t.name));
+    b.onclick = () => { theme = applyTheme(t.id); ls.set('theme', theme); box.querySelectorAll('i').forEach((d, i) => d.textContent = THEMES[i].id === theme ? '✓' : ''); };
+    box.append(b);
+  });
+  applyTheme(theme);
+})();
+
+// ---- حساب کاربری ----
+let session = ls.get('session', null);   // {token, user:{id,name,av}}
+const me = () => (session && session.user) || {};
+const hue = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+function avatar(uid, name, av, size) {
+  const el = document.createElement('div'); el.className = 'av';
+  if (size) el.style.cssText = `width:${size}px;height:${size}px;font-size:${Math.round(size * .45)}px`;
+  const letter = () => { el.replaceChildren(); el.textContent = [...String(name || '?')][0].toUpperCase(); el.style.background = `hsl(${hue(uid || name)} 55% 45%)`; };
+  if (uid && av) {
+    const img = new Image(); img.alt = ''; img.draggable = false; img.onerror = letter; img.src = `/api/avatar/${uid}?v=${av}`;
+    el.style.background = 'var(--line)'; el.append(img);
+  } else letter();
+  return el;
+}
+async function api(path, opts = {}) {
+  const r = await fetch(path, { ...opts, headers: { ...(session ? { Authorization: 'Bearer ' + session.token } : {}), ...(opts.headers || {}) } });
+  let d = {}; try { d = await r.json(); } catch {}
+  if (r.status === 401 && session && path !== '/api/login') logout('نشست شما منقضی شده؛ دوباره وارد شوید.');
+  return { ok: r.ok, status: r.status, d };
+}
+const saveSession = () => ls.set('session', session);
+// عکس را وسط‌چین و مربعی می‌کند و به JPEG کوچک (۱۹۲ پیکسل) تبدیل می‌کند
+async function toAvatarBlob(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const S = 192, c = document.createElement('canvas'); c.width = c.height = S;
+    const x = c.getContext('2d'), m = Math.min(img.width, img.height);
+    x.fillStyle = '#fff'; x.fillRect(0, 0, S, S);
+    x.drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, S, S);
+    return await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(), 'image/jpeg', .85));
+  } finally { URL.revokeObjectURL(url); }
+}
+
+let ws = null, queue = [], retry = 0, cur = null, joining = null, pending = null, unread = {}, authMode = 'reg', newAvatar = null;
+let members = ls.get('rooms', {});   // اتاق‌های عضو: {id:{name, token}}  (نسخه‌های قدیمی ممکن است pw داشته باشند)
+let created = ls.get('created', []); // اتاق‌هایی که خودم ساخته‌ام: [{id,name}]
+let maxOwn = 5;
+
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const sheet = (id, on) => $('#' + id).classList.toggle('on', on);
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => document.querySelectorAll('.sheet').forEach(s => s.classList.remove('on')));
+const saveMembers = () => ls.set('rooms', members);
+
+// ---- فهرست‌ها ----
+function roomRow(r, extra, action) {
+  const row = document.createElement('div'); row.className = 'room';
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'main';
+  const n = document.createElement('div'); n.textContent = r.name; n.dir = 'auto';
+  const side = document.createElement('div'); side.style.cssText = 'display:flex;gap:8px;align-items:center';
+  if (extra) { const s = document.createElement('span'); s.textContent = extra; side.append(s); }
+  if (unread[r.id]) { const u = document.createElement('span'); u.className = 'badge'; u.textContent = fa(unread[r.id]); side.append(u); }
+  b.append(n, side); b.onclick = () => enter(r.id, r.name); row.append(b);
+  if (action) { const x = document.createElement('button'); x.type = 'button'; x.className = 'act'; x.textContent = action.label; x.onclick = action.fn; row.append(x); }
+  return row;
+}
+async function search() {
+  const q = $('#q').value.trim();
+  $('#listTitle').textContent = q ? 'نتیجه‌ی جستجو' : 'همه‌ی اتاق‌ها';
+  try {
+    const rows = await (await fetch('/api/rooms?q=' + encodeURIComponent(q))).json();
+    const box = $('#list'); box.replaceChildren();
+    if (!rows.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = q ? 'اتاقی با این نام پیدا نشد. می‌توانید خودتان بسازید.' : 'هنوز اتاقی ساخته نشده. اولین اتاق را بسازید.'; box.append(e); }
+    rows.forEach(r => box.append(roomRow(r, [r.online ? r.online + ' آنلاین' : '', members[r.id] ? 'عضو' : ''].filter(Boolean).join(' · '))));
+  } catch { $('#list').textContent = 'اتصال به سرور برقرار نشد.'; }
+}
+function section(box, title, rooms, emptyText, action) {
+  const t = document.createElement('div'); t.className = 'sec'; t.textContent = title; box.append(t);
+  if (!rooms.length) { const e = document.createElement('div'); e.className = 'empty'; e.style.padding = '10px 8px'; e.textContent = emptyText; box.append(e); }
+  rooms.forEach(r => box.append(roomRow(r, '', action(r))));
+}
+function renderMine() {
+  const box = $('#mine'); box.replaceChildren();
+  const mineIds = new Set(created.map(r => String(r.id)));
+  const joined = Object.keys(members).filter(id => !mineIds.has(id)).map(id => ({ id, name: members[id].name }));
+  section(box, 'اتاق‌هایی که عضو هستم', joined, 'هنوز عضو اتاقی نیستید. وارد یک اتاق شوید و رمزش را بزنید تا اینجا بیاید.', r => ({ label: 'خروج', fn: () => leaveMember(r) }));
+  section(box, `اتاق‌هایی که ساخته‌ام (${fa(created.length)} از ${fa(maxOwn)})`, created, 'هنوز اتاقی نساخته‌اید.', r => ({ label: 'حذف', fn: () => delRoom(r) }));
+}
+async function syncMine() {
+  try { const { ok, d } = await api('/api/mine'); if (!ok) return; created = d.rooms; maxOwn = d.max; ls.set('created', created); renderMine(); } catch {}
+}
+let tm; $('#q').oninput = () => { clearTimeout(tm); tm = setTimeout(search, 250); };
+
+function forget(id) {
+  delete members[id]; delete unread[id]; saveMembers();
+  created = created.filter(r => String(r.id) !== String(id)); ls.set('created', created);
+  wsSend({ t: 'unsub', id: +id });
+}
+function leaveMember(r) {
+  if (!confirm(`از عضویت «${r.name}» خارج می‌شوید؟\nدیگر از این اتاق اعلان نمی‌گیرید و برای ورود دوباره باید رمز را بزنید.`)) return;
+  forget(r.id); renderMine(); search();
+}
+async function delRoom(r) {
+  if (!confirm(`اتاق «${r.name}» با همه‌ی پیام‌هایش برای همیشه حذف شود؟`)) return;
+  try {
+    const x = await api('/api/rooms/' + r.id, { method: 'DELETE' });
+    if (!x.ok && x.status !== 404) throw 0;
+  } catch { alert('حذف انجام نشد. اتصال را بررسی کنید.'); return; }
+  forget(r.id); renderMine(); search(); syncMine();
+}
+
+// ---- اتصال (یک WebSocket برای همه‌ی اتاق‌های عضو) ----
+function wsSend(o) { if (!session) return; if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); else { queue.push(o); wsOpen(); } }
+const cred = id => { const m = members[id] || {}; return m.token ? { token: m.token } : m.pw ? { password: m.pw } : {}; };
+function wsOpen() {
+  if (!session || (ws && ws.readyState < 2)) return;
+  const s = ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
+  const tx = o => s.send(JSON.stringify(o));
+  s.onopen = () => {
+    retry = 0;
+    tx({ t: 'auth', token: session.token });
+    tx({ t: 'sub', items: Object.keys(members).map(id => ({ id: +id, ...cred(id) })) });
+    if (cur) tx({ t: 'join', id: cur.id, ...cred(cur.id) });
+    queue.splice(0).forEach(tx);
+  };
+  s.onmessage = ev => { let d; try { d = JSON.parse(ev.data); } catch { return; } onWs(d); };
+  s.onclose = () => {
+    if (ws !== s) return; ws = null;
+    if (cur) $('#onl').textContent = 'در حال اتصال...';
+    setTimeout(wsOpen, Math.min(1000 * ++retry, 8000));
+  };
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && session) wsOpen(); });
+
+function onWs(d) {
+  if (d.t === 'autherr') return logout('نشست شما منقضی شده؛ دوباره وارد شوید.');
+  if (d.t === 'err') {
+    if (joining) {
+      $('#jerr').textContent = d.m;
+      if (!$('#joinSheet').classList.contains('on')) { pending = joining; $('#joinTitle').textContent = joining.name; $('#jpw').value = ''; sheet('joinSheet', true); }
+    } else if (cur) leaveChat();
+  } else if (d.t === 'subbed') {
+    d.ok.forEach(r => { members[r.id] = { name: r.name, token: r.token }; });
+    d.bad.forEach(b => { if (b.why !== 'limit') { delete members[b.id]; if (cur && cur.id === b.id) leaveChat(); } });
+    saveMembers(); renderMine();
+  } else if (d.t === 'joined') {
+    retry = 0; joining = null; cur = { id: d.id, name: d.name };
+    members[d.id] = { name: d.name, token: d.token }; saveMembers(); delete unread[d.id];
+    $('#rname').textContent = d.name; $('#msgs').replaceChildren(); d.history.forEach(addMsg);
+    sheet('joinSheet', false); show('chat');
+  } else if (d.t === 'msg') onMsg(d);
+  else if (d.t === 'online') { if (cur && d.room === cur.id) $('#onl').textContent = d.n + ' آنلاین'; }
+  else if (d.t === 'gone') { const wasCur = cur && cur.id === d.room; forget(d.room); if (wasCur) leaveChat(); renderMine(); search(); }
+}
+
+// ---- ورود به اتاق ----
+function enter(id, name) {
+  pending = { id, name };
+  if (members[id] && (members[id].token || members[id].pw)) {   // عضو هستم: بدون پرسیدن رمز
+    joining = pending; wsSend({ t: 'join', id: +id, ...cred(id) }); return;
+  }
+  $('#joinTitle').textContent = name; $('#jerr').textContent = ''; $('#jpw').value = ''; sheet('joinSheet', true); $('#jpw').focus();
+}
+$('#joinGo').onclick = () => {
+  const pw = $('#jpw').value; if (!pw || !pending) return;
+  $('#jerr').textContent = ''; askNotify();
+  joining = pending; wsSend({ t: 'join', id: +pending.id, password: pw });
+};
+$('#jpw').onkeydown = e => e.key === 'Enter' && $('#joinGo').click();
+function leaveChat() { cur = null; joining = null; wsSend({ t: 'leave' }); show('home'); renderMine(); search(); }
+$('#back').onclick = leaveChat;
+
+// ---- پیام‌ها ----
+function addMsg(m) {
+  const box = $('#msgs'), near = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+  const mine = !!m.uid && m.uid === me().id;
+  const row = document.createElement('div'); row.className = 'mrow' + (mine ? ' me' : '');
+  const el = document.createElement('div'); el.className = 'm' + (mine ? ' me' : '');
+  const b = document.createElement('b'); b.textContent = m.nick; b.dir = 'auto';
+  const p = document.createElement('p'); p.textContent = m.text; p.dir = 'auto';
+  const t = document.createElement('i'); t.textContent = new Date(m.ts).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+  el.append(b, p, t); const av = avatar(m.uid, m.nick, m.av, 36);
+  if (m.uid) { av.style.cursor = 'pointer'; av.onclick = () => openProfile(m.uid); }
+  row.append(av, el); box.append(row); if (near) box.scrollTop = box.scrollHeight;
+}
+function sendMsg() {
+  const v = $('#text').value.trim(); if (!v || !ws || ws.readyState !== 1) return;
+  ws.send(JSON.stringify({ t: 'msg', text: v })); $('#text').value = ''; $('#text').focus();
+}
+$('#sendBtn').onclick = sendMsg; $('#text').onkeydown = e => e.key === 'Enter' && sendMsg();
+
+// ---- اعلان‌ها (فقط برای اتاق‌هایی که عضو هستم) ----
+const LN = () => window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
+let notifId = 0, toastTm;
+async function askNotify() {
+  try {
+    const ln = LN();
+    if (ln) { const p = await ln.checkPermissions(); if (p.display !== 'granted' && p.display !== 'denied') await ln.requestPermissions(); }
+    else if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+  } catch {}
+}
+(async () => {
+  const ln = LN(); if (!ln) return;
+  try {
+    await ln.createChannel({ id: 'messages', name: 'پیام‌ها', importance: 4, visibility: 1, vibration: true });
+    ln.addListener('localNotificationActionPerformed', e => {
+      const id = e && e.notification && e.notification.extra && e.notification.extra.room;
+      if (id && members[id]) enter(id, members[id].name);
+    });
+  } catch {}
+})();
+async function notify(d) {
+  const title = (members[d.room] || {}).name || 'پیام جدید', body = `${d.nick}: ${d.text}`.slice(0, 140), ln = LN();
+  if (ln) { try { await ln.schedule({ notifications: [{ id: (notifId = notifId % 2e9 + 1), title, body, channelId: 'messages', extra: { room: d.room } }] }); return; } catch {} }
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try { const n = new Notification(title, { body, tag: 'room-' + d.room }); n.onclick = () => { window.focus(); enter(d.room, title); n.close(); }; } catch {}
+  }
+}
+function toast(d) {
+  const el = $('#toast'), name = (members[d.room] || {}).name || '';
+  el.replaceChildren(); const b = document.createElement('b'); b.textContent = name; b.dir = 'auto';
+  const p = document.createElement('div'); p.textContent = `${d.nick}: ${d.text}`.slice(0, 120); p.dir = 'auto';
+  el.append(b, p); el.onclick = () => { el.classList.remove('on'); enter(d.room, name); };
+  el.classList.add('on'); clearTimeout(toastTm); toastTm = setTimeout(() => el.classList.remove('on'), 4500);
+}
+function onMsg(d) {
+  if (!members[d.room]) return;                       // اتاقی که عضوش نیستم: هیچ اعلانی نه
+  const inRoom = cur && d.room === cur.id;
+  if (inRoom) addMsg(d);
+  if (d.uid === me().id) return;                      // پیام خودم
+  if (inRoom && !document.hidden) return;             // دارم همین اتاق را می‌بینم
+  if (!inRoom) { unread[d.room] = (unread[d.room] || 0) + 1; renderMine(); }
+  if (document.hidden) notify(d); else toast(d);
+}
+
+// ---- ساخت اتاق ----
+const limitMsg = () => `هر نفر حداکثر ${fa(maxOwn)} اتاق می‌تواند بسازد. برای ساخت اتاق جدید، یکی از اتاق‌های خودتان را حذف کنید.`;
+$('#newBtn').onclick = () => {
+  $('#nname').value = $('#q').value.trim(); $('#npw').value = '';
+  $('#nerr').textContent = created.length >= maxOwn ? limitMsg() : ''; sheet('newSheet', true);
+};
+$('#newGo').onclick = async () => {
+  if (created.length >= maxOwn) { $('#nerr').textContent = limitMsg(); return; }
+  const name = $('#nname').value.trim(), password = $('#npw').value;
+  askNotify();
+  let r, d;
+  try {
+    ({ ok: r, d } = await api('/api/rooms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, password }) }));
+  } catch { $('#nerr').textContent = 'اتصال به سرور برقرار نشد.'; return; }
+  if (!r) { $('#nerr').textContent = d.error || 'ساخت اتاق انجام نشد.'; return; }
+  created.push({ id: d.id, name: d.name }); ls.set('created', created);
+  sheet('newSheet', false); joining = { id: d.id, name: d.name };
+  wsSend({ t: 'join', id: d.id, password });
+  syncMine();
+};
+
+// ---- ثبت‌نام / ورود ----
+function setAuthMode(m) {
+  authMode = m; const reg = m === 'reg';
+  $('#tabReg').classList.toggle('on', reg); $('#tabLogin').classList.toggle('on', !reg);
+  $('#avpick').style.display = reg ? '' : 'none';
+  $('#aGo').textContent = reg ? 'ثبت‌نام' : 'ورود';
+  $('#apw').autocomplete = reg ? 'new-password' : 'current-password';
+  $('#apw').placeholder = reg ? 'رمز عبور (حداقل ۶ حرف)' : 'رمز عبور';
+  $('#aerr').textContent = '';
+}
+function drawAuthPreview(url) {
+  const box = $('#avPrev'), name = $('#aname').value.trim() || '؟';
+  let el;
+  if (url) { el = document.createElement('div'); el.className = 'av big'; const i = new Image(); i.alt = ''; i.src = url; el.append(i); }
+  else { el = avatar(0, name, 0, 96); el.style.background = 'var(--line)'; el.style.color = 'var(--mute)'; el.textContent = '📷'; el.style.fontSize = '36px'; }
+  box.replaceChildren(el);
+}
+let avUrl = null;
+$('#tabReg').onclick = () => setAuthMode('reg'); $('#tabLogin').onclick = () => setAuthMode('login');
+$('#avBtn').onclick = () => $('#avFile').click();
+$('#avPrev').onclick = () => $('#avFile').click();
+$('#avFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try { newAvatar = await toAvatarBlob(f); if (avUrl) URL.revokeObjectURL(avUrl); avUrl = URL.createObjectURL(newAvatar); drawAuthPreview(avUrl); $('#aerr').textContent = ''; }
+  catch { $('#aerr').textContent = 'این فایل به‌عنوان تصویر خوانده نشد.'; }
+};
+async function authGo() {
+  const name = $('#aname').value.trim(), password = $('#apw').value, reg = authMode === 'reg', err = $('#aerr');
+  if (name.length < 2) { err.textContent = 'نام باید حداقل ۲ حرف باشد.'; return; }
+  if (reg && password.length < 6) { err.textContent = 'رمز عبور باید حداقل ۶ حرف باشد.'; return; }
+  if (!password) { err.textContent = 'رمز عبور را بنویسید.'; return; }
+  err.textContent = ''; $('#aGo').disabled = true;
+  try {
+    const { ok, d } = await api(reg ? '/api/register' : '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, password }) });
+    if (!ok) { err.textContent = d.error || 'انجام نشد.'; return; }
+    session = { token: d.token, user: d.user }; saveSession();
+    if (reg && newAvatar) {                       // آپلود عکس پروفایل (اگر انتخاب شده)
+      const u = await api('/api/avatar', { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: newAvatar }).catch(() => null);
+      if (u && u.ok) { session.user = u.d.user; saveSession(); }
+    }
+    $('#apw').value = ''; newAvatar = null;
+    startApp();
+  } catch { err.textContent = 'اتصال به سرور برقرار نشد.'; }
+  finally { $('#aGo').disabled = false; }
+}
+$('#aGo').onclick = authGo;
+$('#apw').onkeydown = $('#aname').onkeydown = e => e.key === 'Enter' && authGo();
+$('#aname').oninput = () => { if (!newAvatar) drawAuthPreview(null); };
+
+function logout(msg) {
+  const s = ws; ws = null; if (s) try { s.close(); } catch {}
+  session = null; members = {}; created = []; unread = {}; cur = null; joining = null; pending = null; queue = [];
+  ['session', 'rooms', 'created'].forEach(k => { try { localStorage.removeItem(k); } catch {} });
+  document.querySelectorAll('.sheet').forEach(x => x.classList.remove('on'));
+  $('#aname').value = ''; $('#apw').value = ''; newAvatar = null; drawAuthPreview(null);
+  setAuthMode('login'); $('#aerr').textContent = typeof msg === 'string' ? msg : ''; show('auth');
+}
+$('#logout').onclick = () => { if (confirm('از حساب خود خارج می‌شوید؟\nاتاق‌های عضو این دستگاه هم از لیست پاک می‌شوند.')) logout(); };
+
+// ---- تنظیمات ----
+function renderSettings() {
+  $('#sAv').replaceChildren(avatar(me().id, me().name, me().av, 64));
+  $('#sName').textContent = me().name; $('#sName').dir = 'auto';
+  $('#sBio').textContent = me().bio || ''; $('#sBio').dir = 'auto';
+}
+$('#gear').onclick = () => { renderSettings(); show('settings'); };
+$('#sback').onclick = () => show('home');
+$('#sEdit').onclick = openEdit;
+
+// ---- ویرایش پروفایل ----
+const msg = (el, t, ok) => { el.textContent = t || ''; el.style.color = ok ? 'var(--link)' : ''; };
+const JSONH = { 'Content-Type': 'application/json' };
+function renderEdit() { $('#eAv').replaceChildren(avatar(me().id, me().name, me().av, 96)); $('#ePhotoDel').style.display = me().av ? '' : 'none'; }
+function openEdit() {
+  $('#ename').value = me().name; $('#ebio').value = me().bio || '';
+  msg($('#eerr'), ''); msg($('#perr'), ''); $('#epwOld').value = ''; $('#epwNew').value = '';
+  renderEdit(); show('edit');
+}
+$('#eback').onclick = () => { renderSettings(); show('settings'); };
+const eFile = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/*', hidden: true });
+document.body.append(eFile);
+$('#ePhoto').onclick = () => eFile.click();
+eFile.onchange = async () => {
+  const f = eFile.files[0]; eFile.value = ''; if (!f) return;
+  try {
+    const { ok, d } = await api('/api/avatar', { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: await toAvatarBlob(f) });
+    if (!ok) return msg($('#eerr'), d.error || 'آپلود انجام نشد.');
+    session.user = { ...me(), ...d.user }; saveSession(); renderEdit(); msg($('#eerr'), 'عکس پروفایل عوض شد ✓', true);
+  } catch { msg($('#eerr'), 'آپلود انجام نشد. فایل یا اتصال را بررسی کنید.'); }
+};
+$('#ePhotoDel').onclick = async () => {
+  try { const { ok, d } = await api('/api/avatar', { method: 'DELETE' }); if (ok) { session.user = { ...me(), ...d.user }; saveSession(); renderEdit(); msg($('#eerr'), ''); } }
+  catch { msg($('#eerr'), 'انجام نشد. اتصال را بررسی کنید.'); }
+};
+$('#eSave').onclick = async () => {
+  const name = $('#ename').value.trim().replace(/\s+/g, ' '), bio = $('#ebio').value.trim(), err = $('#eerr');
+  if (name.length < 2) return msg(err, 'نام باید حداقل ۲ حرف باشد.');
+  $('#eSave').disabled = true;
+  try {
+    const { ok, d } = await api('/api/profile', { method: 'PUT', headers: JSONH, body: JSON.stringify({ name, bio }) });
+    if (!ok) return msg(err, d.error || 'ذخیره نشد.');
+    session.user = d.user; saveSession(); renderEdit(); $('#ename').value = d.user.name; $('#ebio').value = d.user.bio; msg(err, 'ذخیره شد ✓', true);
+  } catch { msg(err, 'اتصال به سرور برقرار نشد.'); }
+  finally { $('#eSave').disabled = false; }
+};
+$('#ePw').onclick = async () => {
+  const oldPassword = $('#epwOld').value, newPassword = $('#epwNew').value, err = $('#perr');
+  if (!oldPassword) return msg(err, 'رمز فعلی را بنویسید.');
+  if (newPassword.length < 6) return msg(err, 'رمز جدید باید حداقل ۶ حرف باشد.');
+  try {
+    const { ok, d } = await api('/api/password', { method: 'POST', headers: JSONH, body: JSON.stringify({ oldPassword, newPassword }) });
+    if (!ok) return msg(err, d.error || 'انجام نشد.');
+    session = { token: d.token, user: d.user }; saveSession();
+    $('#epwOld').value = ''; $('#epwNew').value = ''; msg(err, 'رمز عبور عوض شد ✓ (دستگاه‌های دیگر باید دوباره وارد شوند)', true);
+  } catch { msg(err, 'اتصال به سرور برقرار نشد.'); }
+};
+$('#eDel').onclick = () => { $('#dpw').value = ''; msg($('#derr'), ''); sheet('delSheet', true); $('#dpw').focus(); };
+$('#dGo').onclick = async () => {
+  const password = $('#dpw').value; if (!password) return msg($('#derr'), 'رمز عبور را بنویسید.');
+  try {
+    const { ok, d } = await api('/api/account', { method: 'DELETE', headers: JSONH, body: JSON.stringify({ password }) });
+    if (!ok) return msg($('#derr'), d.error || 'حذف انجام نشد.');
+    logout('حساب شما حذف شد.');
+  } catch { msg($('#derr'), 'اتصال به سرور برقرار نشد.'); }
+};
+$('#dpw').onkeydown = e => e.key === 'Enter' && $('#dGo').click();
+
+// ---- پروفایل دیگران (با زدن روی عکس در چت) ----
+async function openProfile(uid) {
+  let u;
+  if (uid === me().id) u = me();
+  else { try { const r = await api('/api/user/' + uid); if (!r.ok) return; u = r.d.user; } catch { return; } }
+  const box = $('#profBody'); box.replaceChildren(avatar(u.id, u.name, u.av, 96));
+  const n = document.createElement('b'); n.textContent = u.name; n.dir = 'auto';
+  const p = document.createElement('p'); p.textContent = u.bio || 'بدون توضیح'; p.dir = 'auto';
+  box.append(n, p); sheet('profSheet', true);
+}
+
+// ---- شروع ----
+function startApp() { show('home'); renderMine(); search(); syncMine(); wsOpen(); }
+drawAuthPreview(null); setAuthMode('reg');
+if (session && session.token && session.user) {
+  startApp();
+  api('/api/me').then(r => { if (r.ok) { session.user = r.d.user; saveSession(); } }).catch(() => {});
+} else { session = null; show('auth'); }
+</script>
+</body>
+</html>
