@@ -374,7 +374,7 @@ $('#joinGo').onclick = () => {
   $('#jerr').textContent = ''; askNotify();
   joining = pending; wsSend({ t: 'join', id: +pending.id, password: pw });
 };
-$('#jpw').onkeydown = e => e.key === 'Enter' && $('#joinGo').click();
+$('#jpw').onkeydown = e => { if (e.key === 'Enter') $('#joinGo').click(); };
 function leaveChat() { cur = null; joining = null; wsSend({ t: 'leave' }); show('home'); renderMine(); search(); }
 $('#back').onclick = leaveChat;
 
@@ -395,7 +395,7 @@ function sendMsg() {
   const v = $('#text').value.trim(); if (!v || !ws || ws.readyState !== 1) return;
   ws.send(JSON.stringify({ t: 'msg', text: v })); $('#text').value = ''; $('#text').focus();
 }
-$('#sendBtn').onclick = sendMsg; $('#text').onkeydown = e => e.key === 'Enter' && sendMsg();
+$('#sendBtn').onclick = sendMsg; $('#text').onkeydown = e => { if (e.key === 'Enter') sendMsg(); };
 
 // ---- اعلان‌ها (فقط برای اتاق‌هایی که عضو هستم) ----
 const LN = () => window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
@@ -508,7 +508,7 @@ async function authGo() {
   finally { $('#aGo').disabled = false; }
 }
 $('#aGo').onclick = authGo;
-$('#apw').onkeydown = $('#aname').onkeydown = e => e.key === 'Enter' && authGo();
+$('#apw').onkeydown = $('#aname').onkeydown = e => { if (e.key === 'Enter') authGo(); };
 $('#aname').oninput = () => { if (!newAvatar) drawAuthPreview(null); };
 
 function logout(msg) {
@@ -587,7 +587,7 @@ $('#dGo').onclick = async () => {
     logout('حساب شما حذف شد.');
   } catch { msg($('#derr'), 'اتصال به سرور برقرار نشد.'); }
 };
-$('#dpw').onkeydown = e => e.key === 'Enter' && $('#dGo').click();
+$('#dpw').onkeydown = e => { if (e.key === 'Enter') $('#dGo').click(); };
 
 // ---- پروفایل دیگران (با زدن روی عکس در چت) ----
 async function openProfile(uid) {
