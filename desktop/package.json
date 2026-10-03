@@ -1,0 +1,17 @@
+{
+  "name": "payamresan-desktop",
+  "version": "1.0.0",
+  "description": "Payamresan desktop",
+  "author": "payamresan",
+  "main": "main.js",
+  "scripts": { "start": "electron .", "dist": "electron-builder --win --publish never" },
+  "devDependencies": { "electron": "^33.0.0", "electron-builder": "^25.1.8" },
+  "build": {
+    "appId": "app.payamresan.desktop",
+    "productName": "Payamresan",
+    "files": ["main.js", "offline.html", "config.json", "icon.png"],
+    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }, { "target": "portable", "arch": ["x64"] }], "icon": "icon.png" },
+    "nsis": { "oneClick": true, "perMachine": false, "artifactName": "payamresan-setup.${ext}" },
+    "portable": { "artifactName": "payamresan-portable.${ext}" }
+  }
+}
