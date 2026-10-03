@@ -1,0 +1,35 @@
+name: Build Desktop
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths: ['desktop/**', 'capacitor.config.json', '.github/workflows/build-desktop.yml']
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node -e "const c=require('./capacitor.config.json');require('fs').writeFileSync('desktop/config.json',JSON.stringify({url:c.server.url}))"
+      - run: cd desktop && npm install && npx electron-builder --win --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: payamresan-desktop
+          path: |
+            desktop/dist/payamresan-setup.exe
+            desktop/dist/payamresan-portable.exe
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: desktop
+          name: Desktop (Windows)
+          files: |
+            desktop/dist/payamresan-setup.exe
+            desktop/dist/payamresan-portable.exe
+          make_latest: false
